@@ -1,7 +1,6 @@
+from base import *
 import enum
 import random
-from language import Language
-from world import Controller
 
 class Sym(enum.Enum):
     ONE             = 1
@@ -23,7 +22,7 @@ class Sym(enum.Enum):
     REPEAT          = 17
     ZERO            = 18
 
-class Master_Language(Language):
+class Standard_Language(Language):
     def __init__(self, obs_num, choice_list, obs_names = [], set_names = []):
         self.obs_num = obs_num
         self.obs = [0 for i in range(obs_num)]
@@ -212,38 +211,12 @@ class Master_Language(Language):
                 self.execute(c[2])
         return(self.choice)
 
-class Master_Language_Control(Controller):
+class Standard_Language_Controller(Language_Controller):
+    """ A wrapper for Language_Controller
+        that takes stopping and uncert parameters
+    """
     def __init__(self, agent, lang, stopping = 0.75, uncert = 0.25):
         self.agent = agent
         self.lang = lang
         self.uncert = uncert
         self.alg = lang.generate(stopping = stopping, uncert = uncert)
-
-    def update(self, observations):
-        self.lang.update(observations)
-
-    def command(self):
-        self.agent.update(self.lang.execute(self.alg))
-
-
-def main():
-    ml = Master_Language(4, ["UP","DOWN","LEFT","RIGHT"], ["CURR_X","CURR_Y","GOAL_X", "GOAL_Y"],
-    ["SET_UP","SET_DOWN", "SET_LEFT", "SET_RIGHT"])
-    exp = ml.generate(stopping = 0.5, uncert = 0.05)
-    ml.update([1,2,3,4])
-    # print(exp)
-    # print()
-    # print("Prints as: \n")
-    # print(ml.int_exp_to_str(exp) + "\n")
-    # print("Evaluates to: ")
-    # print(str(ml.int_eval(exp)) + "\n")
-    print("An expression: \n")
-    print(exp)
-    print()
-    print("Prints as: \n")
-    ml.print_commands(exp)
-    print("Evaluates to: \n")
-    print(ml.execute(exp))
-
-if __name__ == "__main__":
-    main()
