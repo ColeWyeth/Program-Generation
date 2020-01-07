@@ -41,21 +41,25 @@ class Master_Language(Language):
         self.exe  = [Sym.IF_THEN_ELSE, Sym.SET_CHOICE]
         self.choice = self.choice_list[0]
 
-    def int_generate(self, term_ratio = 6, uncert = 1):
-        """ High term_ratio makes termination more likely.
+    def int_generate(self, term_prob = 0.75, uncert = 0.25):
+        """ High term_prob makes termination more likely.
             High uncert includes more probabilistic behavior
         """
 
-        term = random.choice(term_ratio*[True,] +  [False,])
+        term = (random.random() < term_prob) # Whether we will terminate recursion
         if term:
-            s = random.choice(self.int_val + uncert*[Sym.RAND_INT])
-            if s == Sym.OBS_POS:
+            guess = (random.random() < uncert) # Whether to act probabilistically
+            if guess:
+                s = Sym.RAND_INT
+            else:
+                s = random.choice(self.int_val)
+            if s == Sym.OBS_POS: # In this case we must choose an observation channel
                 return (s, random.choice(range(self.obs_num)))
             else:
                 return (s,)
         else:
             s = random.choice(self.int_bin_op)
-            return (s, self.int_generate(term_ratio), self.int_generate(term_ratio))
+            return (s, self.int_generate(term_prob, uncert), self.int_generate(term_prob, uncert))
 
     def int_exp_to_str(self, int_exp):
         """ Pretty printing for integer expressions (returns string) """
@@ -103,18 +107,18 @@ class Master_Language(Language):
         elif x == Sym.RAND_INT:
             return(random.choice([0,1]))
 
-    def bool_generate(self, term_ratio = 6, uncert = 1):
+    def bool_generate(self, term_prob = 0.75, uncert = 0.25):
 
-        term = random.choice(term_ratio*[True,] +  [False,])
+        term = (random.random() < term_prob)
         if term:
-            s = random.choice(self.bool_int_comp + uncert*[Sym.RAND_BOOL,])
-            if s == Sym.RAND_BOOL:
-                return((s,))
+            if (random.random() < uncert):
+                return((Sym.RAND_BOOL,))
             else:
-                return(s, self.int_generate(term_ratio, uncert = uncert), self.int_generate(term_ratio, uncert = uncert))
+                s = random.choice(self.bool_int_comp)
+                return(s, self.int_generate(term_prob, uncert), self.int_generate(term_prob, uncert))
         else:
             s = random.choice(self.bool_op)
-            return (s, self.bool_generate(term_ratio, uncert = uncert), self.bool_generate(term_ratio, uncert = uncert))
+            return (s, self.bool_generate(term_prob, uncert), self.bool_generate(term_prob, uncert))
 
     def bool_exp_to_str(self, bool_exp):
         x = bool_exp[0]
@@ -158,15 +162,15 @@ class Master_Language(Language):
         elif x == Sym.RAND_BOOL:
             return(random.choice([True, False]))
 
-    def generate(self, stopping = 2, uncert = 1):
+    def generate(self, stopping = 0.75, uncert = 0.25):
         s = random.choice(self.exe)
-        if(random.choice(range(stopping)) == 0) : s = Sym.PASS
+        if(random.random() < stopping) : s = Sym.PASS
         if   ( s == Sym.IF_THEN_ELSE):
-            return (s, self.bool_generate(uncert = uncert), self.generate(uncert = uncert), self.generate(uncert = uncert))
+            return (s, self.bool_generate(uncert = uncert), self.generate(stopping, uncert), self.generate(stopping, uncert))
         elif ( s == Sym.PASS):
             return (s,)
         else:
-            return(s, random.choice(range(len(self.choice_list))), self.generate(uncert = uncert))
+            return(s, random.choice(range(len(self.choice_list))), self.generate(stopping, uncert))
 
     def print_commands(self, c, indent = 0):
         """ Pretty printing for algorithms """
@@ -209,11 +213,11 @@ class Master_Language(Language):
         return(self.choice)
 
 class Master_Language_Control(Controller):
-    def __init__(self, agent, lang, uncert = 1):
+    def __init__(self, agent, lang, stopping = 0.75, uncert = 0.25):
         self.agent = agent
         self.lang = lang
         self.uncert = uncert
-        self.alg = lang.generate(uncert = uncert)
+        self.alg = lang.generate(stopping = stopping, uncert = uncert)
 
     def update(self, observations):
         self.lang.update(observations)
@@ -225,7 +229,7 @@ class Master_Language_Control(Controller):
 def main():
     ml = Master_Language(4, ["UP","DOWN","LEFT","RIGHT"], ["CURR_X","CURR_Y","GOAL_X", "GOAL_Y"],
     ["SET_UP","SET_DOWN", "SET_LEFT", "SET_RIGHT"])
-    exp = ml.generate()
+    exp = ml.generate(stopping = 0.5, uncert = 0.05)
     ml.update([1,2,3,4])
     # print(exp)
     # print()

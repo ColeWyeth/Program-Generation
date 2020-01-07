@@ -87,12 +87,13 @@ def master_grid_constructor():
     R = Roller((0,0))
     w = grid([R], [5, (4,4)])
     c = Master_Language_Control(R, Master_Language(4, [Dir.UP, Dir.RIGHT, Dir.DOWN, Dir.LEFT],
-    ["CURR_X", "CURR_Y", "GOAL_X","GOAL_Y"], ["SET_UP", "SET_RIGHT", "SET_DOWN", "SET_LEFT"]), uncert = 0)
+    ["CURR_X", "CURR_Y", "GOAL_X","GOAL_Y"], ["SET_UP", "SET_RIGHT", "SET_DOWN", "SET_LEFT"]),
+    stopping = 0.5, uncert = 0)
     return(c,w)
 
 def main():
     #basic_training_loop(10, 500, master_grid_constructor)
-    probabilistic_training_loop(9, 500, 8, master_grid_constructor)
+    probabilistic_training_loop(9, 1500, 1, master_grid_constructor)
 
 if __name__ == "__main__":
     main()
