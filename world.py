@@ -9,8 +9,8 @@ class Agent(Element):
         pass
 
 class Controller():
-    def __init__(self, agent_list):
-        self.agents = agent_list
+    def __init__(self, agent):
+        self.agent = agent
     def command(self):
         pass
 

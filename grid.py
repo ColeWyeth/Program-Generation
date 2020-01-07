@@ -7,7 +7,7 @@ import random
 # And they must also receive input from the outside world
 # For instance, they could actually receive the objective (x, y)
 # and learn the algorith right x times, up y times
-# So worlds could vary between runs 
+# So worlds could vary between runs
 class Dir(enum.Enum):
     REST = 0
     UP = 1
@@ -23,6 +23,9 @@ class Ball(Element):
         self.num = Ball.num
     def name(self):
         return("Ball " + str(self.num))
+
+    def copy(self):
+        return(Ball(self.pos))
 
 class Roller(Ball):
     def __init__(self, pos):
@@ -42,23 +45,26 @@ class Roller(Ball):
         elif self.dir == Dir.LEFT:
             self.pos = (self.pos[0]-1, self.pos[1])
 
+        def copy(self):
+            copiedRoller = Roller(self.pos)
+            copiedRoller.dir = self.dir
+            return(copiedRoller)
+
 class ControlScheme(Controller):
-    def __init__(self, agent_list, dirList):
-        Controller.__init__(self, agent_list)
+    def __init__(self, agent, dirList):
+        Controller.__init__(self, agent)
         self.commands = dirList
         self.next = 0
 
     def command(self):
         curr = self.commands[self.next]
         self.next += 1
-        for a in self.agents:
-            a.update(curr)
+        self.agent.update(curr)
 
 class RandomControl(Controller):
     def command(self):
         curr = random.choice([Dir.UP, Dir.RIGHT, Dir.DOWN, Dir.LEFT])
-        for a in self.agents: # First clear lesson:
-            a.update(curr)    # This can be part of the abstract type
+        self.agent.update(curr)    # This can be part of the abstract type
 
 class grid(World):
     def __init__(self, element_list, params):
@@ -73,7 +79,7 @@ class grid(World):
             # during moves)
             # if world itself ran updates on elements
             # probably the elements would need to pass some
-            # information to world, particularly agents
+            # information to world, particularly agent
             if e.pos[0] < 0:
                 e.pos = (0, e.pos[1])
             if e.pos[0] >= self.size:
@@ -91,6 +97,9 @@ class grid(World):
         print("Step Complete")
         return(0)
 
+    def obs(self, R):
+        return([R.pos[0], R.pos[1], self.goal[0], self.goal[1]])
+
 def main():
     generations = 5
     members = 400
@@ -105,7 +114,7 @@ def main():
             grid1 = grid([Ball((1,1)), Ball((0,1)), R], [5, (4,3)])
 
             strat = [random.choice(DNA) for i in range(steps)]
-            C1 = ControlScheme([R], strat)
+            C1 = ControlScheme(R, strat)
             #C2 = RandomControl([R2])
             t = 0
             for i in range(steps):

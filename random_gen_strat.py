@@ -5,8 +5,8 @@ from grid import *
 from language import *
 
 class Algorithm_Control_Scheme(Controller):
-    def __init__(self, agent_list, lang):
-        Controller.__init__(self, agent_list)
+    def __init__(self, agent, lang):
+        Controller.__init__(self, agent)
         self.alg = lang.generate()
         self.lang = lang
 
@@ -14,13 +14,13 @@ class Algorithm_Control_Scheme(Controller):
         self.lang.update(goal_x, goal_y, curr_x, curr_y)
 
     def command(self):
-        self.agents[0].dir = self.lang.execute(self.alg)
+        self.agent.dir = self.lang.execute(self.alg)
 
 
-# A very basic kind of program learning is achieved 
+# A very basic kind of program learning is achieved
 def main():
     steps = 10
-    agents = 100
+    agents = 500
     bestT = steps + 1
     best = (Sym.PASS,)
     size = 5
@@ -28,10 +28,10 @@ def main():
     for agent in range(agents):
         R = Roller((0,0))
         #R2 = Roller((0,0))
-        grid1 = grid([R], [5, (4, 4)])
+        grid1 = grid([R], [5, (3, 4)])
 
         lang = Basic_Grid()
-        C1 = Algorithm_Control_Scheme([R], lang)
+        C1 = Algorithm_Control_Scheme(R, lang)
         lang.print_commands(C1.alg)
 
         #C2 = RandomControl([R2])

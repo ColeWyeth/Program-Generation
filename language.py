@@ -5,7 +5,7 @@ from grid import Dir
 class Language():
     def generate():
         pass
-    def interpret():
+    def execute():
         pass
 
 class Sym(enum.Enum):
@@ -51,6 +51,7 @@ class Basic_Grid(Language):
             return(s, self.generate())
 
     def print_commands(self, c, indent = 0):
+        """ Pretty printing for algorithms """
         margin = indent * "\t"
         if c[0] == Sym.IF_THEN_ELSE:
             clause = c[1]
