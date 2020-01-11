@@ -211,6 +211,33 @@ class Standard_Language(Language):
                 self.execute(c[2])
         return(self.choice)
 
+class Terminating_Standard_Language(Standard_Language):
+    """ Allows selection of medium length programs by
+        increasing the stopping chance at each level of depth
+        (Averaging it with "increase" ones).
+        This eliminates the waste of a majority of PASS programs
+     """
+    def generate(self, stopping = 0.25, increase = 1, uncert = 0.25):
+        s = random.choice(self.exe)
+        newStopping = (stopping + increase)/(increase + 1)
+        if(random.random() < stopping) : s = Sym.PASS
+        if   ( s == Sym.IF_THEN_ELSE):
+            return (s, self.bool_generate(uncert = uncert), self.generate(newStopping, increase, uncert), self.generate(newStopping, increase, uncert))
+        elif ( s == Sym.PASS):
+            return (s,)
+        else:
+            return(s, random.choice(range(len(self.choice_list))), self.generate(newStopping, increase, uncert))
+
+    def fill_stochastic(self, commands):
+        """ Takes an algorithm that may have probabilistic behaviour.
+            Returns the same algorithm with all probabilistic commands replaced
+            by (randomly generated) deterministic ones.
+            RAND_BOOL replaced by generated boolean expression
+            RAND_INT  replaced by geenrated integer expression 
+        """
+        pass
+
+
 class Standard_Language_Controller(Language_Controller):
     """ A wrapper for Language_Controller
         that takes stopping and uncert parameters
@@ -220,3 +247,13 @@ class Standard_Language_Controller(Language_Controller):
         self.lang = lang
         self.uncert = uncert
         self.alg = lang.generate(stopping = stopping, uncert = uncert)
+
+class Terminating_Standard_Language_Controller(Language_Controller):
+    """ A wrapper for Language_Controller
+        that takes stopping and uncert parameters
+    """
+    def __init__(self, agent, lang, stopping = 0.25, increase = 1, uncert = 0.25):
+        self.agent = agent
+        self.lang = lang
+        self.uncert = uncert
+        self.alg = lang.generate(stopping = stopping, increase = increase, uncert = uncert)
