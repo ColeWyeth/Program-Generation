@@ -54,11 +54,19 @@ def rps_constructor(rounds):
     enemy = RPS([p,], [rounds, [hand.SCISSORS, hand.ROCK, hand.PAPER]])
     return(c, enemy)
 
+def mod_rps_constructor(rounds):
+    p = Player()
+    lang = Terminating_Standard_Language(1, [hand.SCISSORS, hand.ROCK, hand.PAPER],
+    ["ENEMY_CHOICE",], ["SET_SCISSORS","SET_ROCK","SET_PAPER"])
+    c = Terminating_Standard_Language_Controller(p, lang, stopping = 0.5, uncert = 0.25)
+    enemy = RPS([p,], [rounds, [hand.SCISSORS, hand.ROCK, hand.PAPER]])
+    return(c, enemy)
+
 
 def main():
     #basic_training_loop(10, 500, master_grid_constructor)
     rounds = 5
+    #training_loops.modular_learning_strategy(rounds+2, 13000, 5, lambda : mod_rps_constructor(rounds), 20)
     training_loops.probabilistic_training_loop(rounds+2, 13000, 5, lambda : rps_constructor(rounds))
-
 if __name__ == "__main__":
     main()

@@ -104,9 +104,17 @@ def grid_constructor():
     stopping = 0.5, uncert = 0)
     return(c,w)
 
+def terminating_grid_constructor():
+    R = Roller((0,0))
+    w = grid([R], [5, (4,4)])
+    c = Terminating_Standard_Language_Controller(R, Terminating_Standard_Language(4, [Dir.UP, Dir.RIGHT, Dir.DOWN, Dir.LEFT],
+    ["CURR_X", "CURR_Y", "GOAL_X","GOAL_Y"], ["SET_UP", "SET_RIGHT", "SET_DOWN", "SET_LEFT"]),
+    stopping = 0.1, increase =1, uncert = 0.25)
+    return(c,w)
+
 def main():
     #basic_training_loop(10, 500, master_grid_constructor)
-    training_loops.probabilistic_training_loop(9, 1500, 3, grid_constructor)
-
+    #training_loops.probabilistic_training_loop(9, 1500, 3, grid_constructor)
+    training_loops.modular_learning_strategy(9, 1500, 3, terminating_grid_constructor, 10)
 if __name__ == "__main__":
     main()

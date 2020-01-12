@@ -180,14 +180,14 @@ def adventureConstructor():
     aw = Adventure([h,o], [False, (300, 300)])
     lang = Terminating_Standard_Language(2, [Action.LEFT, Action.RIGHT, Action.SWORD, Action.REST],
     ["RANGE", "NEXT_ENEMY"], ["SET_LEFT", "SET_RIGHT", "SET_SWORD", "SET_REST"])
-    c  = Terminating_Standard_Language_Controller(h, lang, stopping = 0.1, increase = 1, uncert = 0)
+    c  = Terminating_Standard_Language_Controller(h, lang, stopping = 0.1, increase = 1, uncert = 0.25)
     return(c,aw)
 def main():
     # lang = Terminating_Standard_Language(2, [Action.LEFT, Action.RIGHT, Action.SWORD, Action.REST],
     # ["RANGE", "NEXT_ENEMY"], ["SET_LEFT", "SET_RIGHT", "SET_SWORD", "SET_REST"])
     # lang.print_commands(lang.generate(0.001, 1, 0))
 
-    training_loops.probabilistic_training_loop(150, 2000, 1, adventureConstructor)
+    training_loops.modular_learning_strategy(150, 50, 3, adventureConstructor, 100)
 
     # h  = Hero(0, "tanith.jpg", "Tanith Low")
     # o  = Ogre(256)

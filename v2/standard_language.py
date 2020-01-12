@@ -228,14 +228,43 @@ class Terminating_Standard_Language(Standard_Language):
         else:
             return(s, random.choice(range(len(self.choice_list))), self.generate(newStopping, increase, uncert))
 
-    def fill_stochastic(self, commands):
+    def fill_int(self, int_exp, term, inc):
+        x = int_exp[0]
+        if x in self.int_bin_op:
+            return (x, self.fill_int(int_exp[1], term, inc), self.fill_int(int_exp[2], term, inc))
+
+        elif x in [Sym.ZERO, Sym.ONE, Sym.NEG_ONE]:
+            return (x,)
+        elif x == Sym.OBS_POS:
+            return(x, int_exp[1])
+        elif x == Sym.RAND_INT:
+            return self.int_generate(term_prob = term, uncert = 0) # Doesn't use increase yet
+
+    def fill_bool(self, bool_exp, term, inc):
+        x = bool_exp[0]
+        if x in self.bool_op:
+            return(x, self.fill_bool(bool_exp[1], term, inc), self.fill_bool(bool_exp[2], term, inc))
+        elif x in self.bool_int_comp:
+            return(x, self.fill_int(bool_exp[1], term, inc), self.fill_int(bool_exp[2], term, inc))
+        elif x == Sym.RAND_BOOL:
+            return self.bool_generate(term_prob = term, uncert = 0) # Doesn't use increase yet
+
+
+    def fill_stochastic(self, c, terminating = 0.75, increase = 1):
         """ Takes an algorithm that may have probabilistic behaviour.
             Returns the same algorithm with all probabilistic commands replaced
             by (randomly generated) deterministic ones.
             RAND_BOOL replaced by generated boolean expression
-            RAND_INT  replaced by geenrated integer expression 
+            RAND_INT  replaced by geenrated integer expression
         """
-        pass
+        if c[0] == Sym.IF_THEN_ELSE:
+            return (c[0], self.fill_bool(c[1], terminating, increase), self.fill_stochastic(c[2]), self.fill_stochastic(c[3]))
+        elif c[0] == Sym.PASS:
+            return c
+        elif c[0] == Sym.SET_CHOICE:
+            if(len(c) > 2):
+                return (c[0], c[1], self.fill_stochastic(c[2]))
+            else: return c
 
 
 class Standard_Language_Controller(Language_Controller):
@@ -257,3 +286,18 @@ class Terminating_Standard_Language_Controller(Language_Controller):
         self.lang = lang
         self.uncert = uncert
         self.alg = lang.generate(stopping = stopping, increase = increase, uncert = uncert)
+
+def main():
+    lang = Terminating_Standard_Language(2, [0,1])
+    c = lang.generate()
+    print("Original Program\n")
+    lang.print_commands(c)
+    # print("Or")
+    # print(c)
+    print("\nNew Program\n" )
+    # print(lang.fill_stochastic(c))
+    lang.print_commands(lang.fill_stochastic(c))
+
+
+if __name__ == "__main__":
+    main()
