@@ -115,6 +115,7 @@ def terminating_grid_constructor():
 def main():
     #basic_training_loop(10, 500, master_grid_constructor)
     #training_loops.probabilistic_training_loop(9, 1500, 3, grid_constructor)
-    training_loops.modular_learning_strategy(9, 1500, 3, terminating_grid_constructor, 10)
+    #training_loops.modular_learning_strategy(9, 1500, 3, terminating_grid_constructor, 10)
+    training_loops.iterate_modular(9, 300, 2, terminating_grid_constructor, 100, 3)
 if __name__ == "__main__":
     main()

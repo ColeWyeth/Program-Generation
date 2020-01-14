@@ -33,7 +33,8 @@ class Standard_Language(Language):
         self.symbols = list(Sym)
         self.bool_int_comp = [Sym.LESS, Sym.EQUAL, Sym.GREATER]
         self.int_bin_op   = [Sym.PLUS, Sym.MULT]
-        self.int_val  = [Sym.ONE, Sym.NEG_ONE, Sym.ZERO] + self.obs_num * [Sym.OBS_POS]
+        self.int_const = [Sym.ONE, Sym.NEG_ONE, Sym.ZERO]
+        self.int_val  = self.int_const + self.obs_num * [Sym.OBS_POS]
         self.bool_op   = [Sym.AND, Sym.OR]
 
         self.num  = [(Sym.OBS_POS, i) for i in range(obs_num)]
@@ -217,16 +218,19 @@ class Terminating_Standard_Language(Standard_Language):
         (Averaging it with "increase" ones).
         This eliminates the waste of a majority of PASS programs
      """
-    def generate(self, stopping = 0.25, increase = 1, uncert = 0.25):
+    def generate(self, stopping = 0.25, increase = 1, uncert = 0.25, bool_stopping = 0.75, int_stopping = 0.75, grounding = 0.75):
         s = random.choice(self.exe)
         newStopping = (stopping + increase)/(increase + 1)
         if(random.random() < stopping) : s = Sym.PASS
         if   ( s == Sym.IF_THEN_ELSE):
-            return (s, self.bool_generate(uncert = uncert), self.generate(newStopping, increase, uncert), self.generate(newStopping, increase, uncert))
+            return (s, self.bool_generate(term_prob = bool_stopping, uncert = uncert, int_stopping = int_stopping, grounding = grounding),
+            self.generate(newStopping, increase, uncert, bool_stopping, int_stopping, grounding),
+            self.generate(newStopping, increase, uncert, bool_stopping, int_stopping, grounding))
         elif ( s == Sym.PASS):
             return (s,)
         else:
-            return(s, random.choice(range(len(self.choice_list))), self.generate(newStopping, increase, uncert))
+            return(s, random.choice(range(len(self.choice_list))),
+            self.generate(newStopping, increase, uncert, bool_stopping, int_stopping, grounding))
 
     def fill_int(self, int_exp, term, inc):
         x = int_exp[0]
@@ -266,6 +270,38 @@ class Terminating_Standard_Language(Standard_Language):
                 return (c[0], c[1], self.fill_stochastic(c[2]))
             else: return c
 
+    def int_generate(self, term_prob = 0.75, uncert = 0.25, grounding = 0.75):
+        """ Int generate with manually set probability of using observations,
+            instead of majority chance for ones, zeroes, etc.
+        """
+
+        term = (random.random() < term_prob) # Whether we will terminate recursion
+        if term:
+            guess = (random.random() < uncert) # Whether to act probabilistically
+            if guess:
+                return (Sym.RAND_INT,)
+            else:
+                if (random.random() < grounding): # In this case we must choose an observation channel
+                    return (Sym.OBS_POS, random.choice(range(self.obs_num)))
+                else:
+                    return (random.choice(self.int_const),)
+        else:
+            s = random.choice(self.int_bin_op)
+            return (s, self.int_generate(term_prob, uncert), self.int_generate(term_prob, uncert))
+
+    def bool_generate(self, term_prob = 0.75, uncert = 0.25, int_stopping = 0.75, grounding = 0.75):
+
+        term = (random.random() < term_prob)
+        if term:
+            if (random.random() < uncert):
+                return((Sym.RAND_BOOL,))
+            else:
+                s = random.choice(self.bool_int_comp)
+                return(s, self.int_generate(term_prob = int_stopping, grounding = grounding, uncert = uncert),
+                self.int_generate(term_prob = int_stopping, grounding = grounding, uncert = uncert))
+        else:
+            s = random.choice(self.bool_op)
+            return (s, self.bool_generate(term_prob, uncert, int_stopping, grounding), self.bool_generate(term_prob, uncert, int_stopping, grounding))
 
 class Standard_Language_Controller(Language_Controller):
     """ A wrapper for Language_Controller
@@ -281,11 +317,13 @@ class Terminating_Standard_Language_Controller(Language_Controller):
     """ A wrapper for Language_Controller
         that takes stopping and uncert parameters
     """
-    def __init__(self, agent, lang, stopping = 0.25, increase = 1, uncert = 0.25):
+    def __init__(self, agent, lang, stopping = 0.25, increase = 1, uncert = 0.25,
+    grounding = 0.9, bool_stopping = 0.75, int_stopping = 0.9):
         self.agent = agent
         self.lang = lang
         self.uncert = uncert
-        self.alg = lang.generate(stopping = stopping, increase = increase, uncert = uncert)
+        self.alg = lang.generate(stopping = stopping, increase = increase, uncert = uncert,
+        grounding = grounding, bool_stopping = bool_stopping, int_stopping = int_stopping)
 
 def main():
     lang = Terminating_Standard_Language(2, [0,1])

@@ -68,5 +68,6 @@ def main():
     rounds = 5
     #training_loops.modular_learning_strategy(rounds+2, 13000, 5, lambda : mod_rps_constructor(rounds), 20)
     training_loops.probabilistic_training_loop(rounds+2, 13000, 5, lambda : rps_constructor(rounds))
+    #training_loops.iterate_modular(rounds+2, 500, 5, lambda : mod_rps_constructor(rounds), 100, 10)
 if __name__ == "__main__":
     main()

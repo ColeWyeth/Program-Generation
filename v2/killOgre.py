@@ -185,9 +185,13 @@ def adventureConstructor():
 def main():
     # lang = Terminating_Standard_Language(2, [Action.LEFT, Action.RIGHT, Action.SWORD, Action.REST],
     # ["RANGE", "NEXT_ENEMY"], ["SET_LEFT", "SET_RIGHT", "SET_SWORD", "SET_REST"])
-    # lang.print_commands(lang.generate(0.001, 1, 0))
+    # print(lang.bool_exp_to_str(lang.bool_generate(term_prob = 0.75, uncert = 0, grounding = 0.9,
+    # int_stopping = 0.9 )))
 
-    training_loops.modular_learning_strategy(150, 50, 3, adventureConstructor, 100)
+    #training_loops.simple_modular(100, 1000, 2, adventureConstructor, 100)
+    training_loops.iterate_modular(100, 300, 2, adventureConstructor, 100, 3)
+    #training_loops.probabilistic_training_loop(150, 1000, 2, adventureConstructor)
+    #training_loops.modular_learning_strategy(150, 200, 2, adventureConstructor, 100)
 
     # h  = Hero(0, "tanith.jpg", "Tanith Low")
     # o  = Ogre(256)
