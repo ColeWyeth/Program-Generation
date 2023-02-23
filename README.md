@@ -4,6 +4,10 @@ This project is designed to randomly generate (or sample)
 algorithms to solve problems. The framework is general enough
 to work in diverse simulated worlds, controlling agents
 with a set of observations.
+Interestingly, I wrote this code before I was familiar with Kolmogorov
+complexity, and avoided the problem of nonhalting TMs by simply not
+adding a looping construct to the generated language. Of course this
+limits the expressiveness of generated algorithms.
 
 The obvious challenge is the exploding number of possible
 algorithms needed to solve complex problems.
