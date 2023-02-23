@@ -31,7 +31,7 @@ class Ogre(Monster):
     def __init__(self, x):
         name = "Ogre " + str(Ogre.num)
         Ogre.num += 1
-        Monster.__init__(self, x, "Ogre.jpg", name)
+        Monster.__init__(self, x, "Ogre.png", name)
         self.health = 1
 
     def getRange(self):
@@ -174,10 +174,10 @@ class UserKeyboard(Controller):
             pygame.time.wait(10)
             if event.type == pygame.QUIT: sys.exit()
 
-def adventureConstructor():
+def adventureConstructor(animate=False):
     h  = Hero(0, "tanith.jpg", "Tanith Low")
     o  = Ogre(250)
-    aw = Adventure([h,o], [False, (300, 300)])
+    aw = Adventure([h,o], [animate, (300, 300)])
     lang = Terminating_Standard_Language(2, [Action.LEFT, Action.RIGHT, Action.SWORD, Action.REST],
     ["RANGE", "NEXT_ENEMY"], ["SET_LEFT", "SET_RIGHT", "SET_SWORD", "SET_REST"])
     c  = Terminating_Standard_Language_Controller(h, lang, stopping = 0.1, increase = 1, uncert = 0.25)
@@ -189,21 +189,38 @@ def main():
     # int_stopping = 0.9 )))
 
     #training_loops.simple_modular(100, 1000, 2, adventureConstructor, 100)
-    training_loops.iterate_modular(100, 300, 2, adventureConstructor, 100, 3)
+    best, _ = training_loops.iterate_modular(100, 300, 2, adventureConstructor, 100, 3)
     #training_loops.probabilistic_training_loop(150, 1000, 2, adventureConstructor)
     #training_loops.modular_learning_strategy(150, 200, 2, adventureConstructor, 100)
 
-    # h  = Hero(0, "tanith.jpg", "Tanith Low")
-    # o  = Ogre(256)
-    # aw = Adventure([h,o], [True, (500, 500)])
-    # c = UserKeyboard(h)
-    # while 1:
-    #     c.command()
-    #     if aw.run(False) == 1:
-    #         print("Victory!")
-    #         break
-    #     if c.command() == 1:
-    #         break
+
+    ex = input("Example run (hit enter, p to play yourself first, or q for quit)")
+    if ex == 'q':
+        return
+    elif ex == 'p':
+        print("Use the up arrow to swing your sword!")
+        h  = Hero(0, "tanith.jpg", "Tanith Low")
+        o  = Ogre(256)
+        aw = Adventure([h,o], [True, (500, 500)])
+        c = UserKeyboard(h)
+        while 1:
+            c.command()
+            if aw.run(False) == 1:
+                print("Victory!")
+                break
+            if c.command() == 1:
+                break
+    c,w = adventureConstructor(True)
+    w.reset()
+    c.alg = best
+    t = 0
+    for i in range(1000):
+        print("Time: " + str(t))
+        if w.run() == 1:
+            break
+        c.update(w.obs(c.agent))
+        c.command()
+        t += 1
 
 if __name__ == "__main__":
     main()
